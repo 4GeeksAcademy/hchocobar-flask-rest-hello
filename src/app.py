@@ -8,7 +8,7 @@ from flask_swagger import swagger
 from flask_cors import CORS
 from utils import APIException, generate_sitemap
 from admin import setup_admin
-from models import db, Users
+from models import db, Users, Teachers, Students
 
 
 # Instancias Flask
@@ -47,20 +47,35 @@ def handle_hello():
 
 @app.route('/users', methods=['GET', 'POST'])
 def handle_users():
-    response_body = results = {}
+    response_body = {}
+    results = []
     if request.method == 'GET':
         # Lógica para consultar la DB y devolver todos los usuarios
-        users = db.session.execute(db.select(Users)).scalars()
+        # users = db.session.execute(db.select(Users)).scalars()
+        users = db.session.execute(db.select(Users, Teachers, Students)
+                          .join(Teachers, Users.id == Teachers.user_id, isouter=True)
+                          .join(Students, Users.id == Students.user_id, isouter=True))
         # .scalars() -> una lista de registros, pero como un objeto SQLAlchemy
         # .scalar() -> un registro, pero como un objeto SQLAlchemy
         print(users)
-        response_body['results'] = [row.serialize() for row in users]
-        response_body['message'] = 'Metodo GET de users'
-        return response_body, 200
+        # response_body['results'] = [row.serialize() for row in users]
+        # response_body['message'] = 'Metodo GET de users'
+        if users:
+            for row in users:
+                user, teacher, student = row  # Desestructuación de Python
+                # data = {'message': 'Hola', 'nombre': 25}
+                data = user.serialize()
+                # Utilizo un if en una linea (one-linner)
+                # algo = x if x == True else x * 2
+                data['profile'] = teacher.serialize() if user.role == 'Teacher' else student.serialize() if user.role == 'Student' else {}
+                results.append(data)
+            response_body['results'] = results
+            return response_body, 200
     if request.method == 'POST':
         data = request.json
         user = Users(email = data['email'],
                      password = data['password'],
+                     role = data['role'],
                      is_active = True)
         db.session.add(user)
         db.session.commit()
