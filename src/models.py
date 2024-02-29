@@ -76,6 +76,7 @@ class Planets(db.Model):
                 "name": self.name}
 
 
+# Many to Many - Modelo puente
 class CharacterFavorites(db.Model):
     __tablename__ = 'character_favorites'
     id = db.Column(db.Integer, primary_key=True)

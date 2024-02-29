@@ -8,7 +8,7 @@ from flask_swagger import swagger
 from flask_cors import CORS
 from utils import APIException, generate_sitemap
 from admin import setup_admin
-from models import db, Users, Teachers, Students
+from models import db, Users, Teachers, Students, Planets, Characters, PlanetFavorites, CharacterFavorites
 
 
 # Instancias Flask
@@ -97,6 +97,45 @@ def handle_user(id):
     if request.method == 'DELETE':
         response_body['message'] = 'metodo DELETE del users/<id>'
         return response_body, 200
+
+
+"""
+Instrucciones
+
+Crea una API conectada a una base de datos e implemente los siguientes endpoints (muy similares a SWAPI.dev or SWAPI.tech):
+
+[GET] /characters Listar todos los registros de Characters en la base de datos.
+[GET] /characters/<int:character_id> Muestra la información de un solo personaje según su id.
+[GET] /planets Listar todos los registros de Planets en la base de datos.
+[GET] /planets/<int:planet_id> Muestra la información de un solo planeta según su id.
+
+Adicionalmente, necesitamos crear los siguientes endpoints para que podamos tener usuarios y favoritos en nuestro blog:
+
+[GET] /users Listar todos los usuarios del blog.
+[GET] /users/<int:user_id>/favorites Listar todos los favoritos que pertenecen al usuario actual.
+
+[POST] /favorites/<int:user_id>/planets Añade un nuevo planeta favorito al usuario con el id= user_id. Recibe planet_id en el body
+[POST] /favorites/<int:user_id>/characters Añade un nuevo personaje favorito al usuario con el id= user_id. Recibe character_id en el body.
+
+[DELETE] /favorites/<int:user_id>/planets/<int:planet_id> Elimina el planeta favorito con el id = planet_id del usuario user_id
+[DELETE] /favorites/<int:user_id>/characters/<int:character_id> Elimina el personaje favorito con el id = character_id
+"""
+
+# [POST] /favorites/<int:user_id>/planets 
+# Añade un nuevo planeta favorito al usuario con el id= user_id. Recibe planet_id en el body
+@app.route('/favorites/<int:user_id>/planets', methods=['POST'])
+def add_favorite_planets(user_id):
+    response_body = {}
+    data = request.json
+    print(data)
+    # toma una instancia del modelo: FavoritePlanets
+    favorite = PlanetFavorites(user_id = user_id,
+                               planet_id = data['planet_id'])
+    db.session.add(favorite)
+    db.session.commit()
+    response_body['message'] = f'Responde el POST de favorite planets del usuario: {user_id}'
+    return response_body
+
 
 
 # This only runs if `$ python src/app.py` is executed
