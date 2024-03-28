@@ -9,7 +9,6 @@ class Users(db.Model):
     email = db.Column(db.String(120), unique=True, nullable=False)
     password = db.Column(db.String(80), unique=False, nullable=False)
     is_active = db.Column(db.Boolean(), unique=False, nullable=False)
-    role = db.Column(db.Enum('Teacher', 'Student', name='role'), nullable=False)
 
     def __repr__(self):
         return f'<User {self.id} - {self.email}>'
@@ -18,35 +17,4 @@ class Users(db.Model):
         # do not serialize the password, its a security breach
         return {"id": self.id,
                 "email": self.email,
-                'is_active': self.is_active,
-                'role': self.role}
-
-
-class Teachers(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(120), nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), unique=True)
-    user = db.relationship('Users')
-
-    def __repr__(self):
-        return f'<Teacher {self.id} - {self.name}>'
-
-    def serialize(self):
-        return {"id": self.id,
-                "name": self.name,
-                'user_id': self.user_id}
-
-
-class Students(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(120), nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), unique=True)
-    user = db.relationship('Users')
-
-    def __repr__(self):
-        return f'<Students {self.id} - {self.name}>'
-
-    def serialize(self):
-        return {"id": self.id,
-                "name": self.name,
-                'user_id': self.user_id}
+                'is_active': self.is_active}
